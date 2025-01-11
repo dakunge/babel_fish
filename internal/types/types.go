@@ -29,7 +29,8 @@ type GetTaskResponse struct {
 }
 
 type LoginRequest struct {
-	ID int `json:"id"`
+	UserName string `json:"user_name"`
+	UserPwd  string `json:"user_pwd"`
 }
 
 type LoginResponse struct {
@@ -43,6 +44,8 @@ type TranslateResponse struct {
 }
 
 type UserRequest struct {
+	UserName string `json:"user_name"`
+	UserPwd  string `json:"user_pwd"`
 }
 
 type UserResponse struct {

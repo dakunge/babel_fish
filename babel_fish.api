@@ -1,10 +1,14 @@
 syntax = "v1"
 
 type (
-	UserRequest  {}
+	UserRequest {
+		UserName string `json:"user_name"`
+		UserPwd  string `json:"user_pwd"`
+	}
 	UserResponse  {}
 	LoginRequest {
-		ID int `json:"id"`
+		UserName string `json:"user_name"`
+		UserPwd  string `json:"user_pwd"`
 	}
 	LoginResponse  {}
 	CreateTaskRequest  {}

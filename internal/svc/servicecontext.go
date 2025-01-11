@@ -14,6 +14,7 @@ type ServiceContext struct {
 	Config    config.Config
 	LLM       llm.LLM
 	TaskModel model.TaskModel
+	UserModel model.UserModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -27,12 +28,18 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	if err != nil {
 		log.Fatal("automigrate err")
 	}
+	err = db.AutoMigrate(&model.User{})
+	if err != nil {
+		log.Fatal("automigrate err")
+	}
 
 	llm := llm.NewLLM()
 	taskModel := model.NewTaskModel(db)
+	userModel := model.NewUserModel(db)
 	return &ServiceContext{
 		Config:    c,
 		LLM:       llm,
 		TaskModel: taskModel,
+		UserModel: userModel,
 	}
 }
