@@ -26,7 +26,9 @@ type (
 	DownloadTaskRequest {
 		ID int `path:"id"`
 	}
-	DownloadTaskResponse  {}
+	DownloadTaskResponse {
+		State int `json:"state"`
+	}
 )
 
 service babel-api {

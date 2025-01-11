@@ -17,10 +17,10 @@ const (
 
 type Task struct {
 	gorm.Model
-	State            TaskState `json:"state"`
-	UserFileName     string    `json:"user_filename"`
-	InternalFileName string    `json:"internal_filename"`
-	ResultFileName   string    `json:"result_filename"`
+	State          TaskState `json:"state"`
+	UserFileName   string    `json:"user_filename"`
+	TaskFileName   string    `json:"task_filename"`
+	ResultFileName string    `json:"result_filename"`
 }
 
 type TaskModel interface {

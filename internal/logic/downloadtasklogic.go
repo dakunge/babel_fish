@@ -2,7 +2,10 @@ package logic
 
 import (
 	"context"
+	"net/http"
+	"os"
 
+	"tuwei/babel_fish/internal/model"
 	"tuwei/babel_fish/internal/svc"
 	"tuwei/babel_fish/internal/types"
 
@@ -23,8 +26,25 @@ func NewDownloadTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Down
 	}
 }
 
-func (l *DownloadTaskLogic) DownloadTask(req *types.DownloadTaskRequest) (resp *types.DownloadTaskResponse, err error) {
-	// todo: add your logic here and delete this line
+func (l *DownloadTaskLogic) DownloadTask(w http.ResponseWriter, req *types.DownloadTaskRequest) (resp *types.DownloadTaskResponse, err error) {
+	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uint(req.ID))
+	if err != nil {
+		return nil, err
+	}
+	if task.State == model.SuccessTaskState {
+		content, err := os.ReadFile(task.ResultFileName)
+		if err != nil {
+			return nil, err
+		}
+		_, err = w.Write(content)
+		if err != nil {
+			return nil, err
+		}
 
-	return
+	}
+
+	resp = &types.DownloadTaskResponse{
+		State: int(task.State),
+	}
+	return resp, nil
 }

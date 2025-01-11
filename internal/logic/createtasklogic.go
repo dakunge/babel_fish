@@ -39,8 +39,9 @@ func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskReque
 	}
 	defer file.Close()
 
-	internalName := path.Join(l.svcCtx.Config.TaskPath, uuid.New().String())
-	tempFile, err := os.Create(internalName)
+	uuid := uuid.New().String()
+	taskFileName := path.Join(l.svcCtx.Config.TaskPath, uuid)
+	tempFile, err := os.Create(taskFileName)
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +50,13 @@ func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskReque
 	if err != nil {
 		return nil, err
 	}
-
+	resultFileName := path.Join(l.svcCtx.Config.TaskPath, uuid)
 	task := model.Task{
-		UserFileName:     handler.Filename,
-		InternalFileName: internalName,
+		UserFileName:   handler.Filename,
+		TaskFileName:   taskFileName,
+		ResultFileName: resultFileName,
 	}
+
 	id, err := l.svcCtx.TaskModel.Create(l.ctx, task)
 	if err != nil {
 		return nil, err

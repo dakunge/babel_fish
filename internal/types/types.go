@@ -15,6 +15,7 @@ type DownloadTaskRequest struct {
 }
 
 type DownloadTaskResponse struct {
+	State int `json:"state"`
 }
 
 type GetTaskRequest struct {
