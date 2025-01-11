@@ -25,6 +25,17 @@ func NewGetTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetTaskLo
 
 func (l *GetTaskLogic) GetTask(req *types.GetTaskRequest) (resp *types.GetTaskResponse, err error) {
 	// todo: add your logic here and delete this line
+	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uint(req.ID))
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	//task.UserFileName
+	resp = &types.GetTaskResponse{
+		ID:       int(task.ID),
+		FileName: task.UserFileName,
+		State:    int(task.State),
+	}
+
+	return resp, nil
 }

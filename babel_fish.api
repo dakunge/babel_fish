@@ -19,8 +19,9 @@ type (
 		ID int `path:"id"`
 	}
 	GetTaskResponse {
-		ID    int `json:"id"`
-		State int `json:"state"`
+		ID       int    `json:"id"`
+		FileName string `json:"fileName"`
+		State    int    `json:"state"`
 	}
 	DownloadTaskRequest {
 		ID int `path:"id"`
@@ -42,7 +43,7 @@ service babel-api {
 	post /tasks/:id/translate (TranslateRequest) returns (TranslateResponse)
 
 	@handler GetTaskHandler
-	get /tasks/:id/ (GetTaskRequest) returns (GetTaskResponse)
+	get /tasks/:id (GetTaskRequest) returns (GetTaskResponse)
 
 	@handler DownloadTaskHandler
 	get /tasks/:id/download (DownloadTaskRequest) returns (DownloadTaskResponse)

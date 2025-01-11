@@ -22,8 +22,9 @@ type GetTaskRequest struct {
 }
 
 type GetTaskResponse struct {
-	ID    int `json:"id"`
-	State int `json:"state"`
+	ID       int    `json:"id"`
+	FileName string `json:"fileName"`
+	State    int    `json:"state"`
 }
 
 type LoginRequest struct {
