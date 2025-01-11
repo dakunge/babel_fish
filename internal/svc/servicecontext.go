@@ -3,6 +3,7 @@ package svc
 import (
 	"log"
 	"tuwei/babel_fish/internal/config"
+	"tuwei/babel_fish/internal/llm"
 	"tuwei/babel_fish/internal/model"
 
 	"gorm.io/driver/mysql"
@@ -11,6 +12,7 @@ import (
 
 type ServiceContext struct {
 	Config    config.Config
+	LLM       llm.LLM
 	TaskModel model.TaskModel
 }
 
@@ -21,9 +23,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Fatal("open db err ")
 	}
 
+	llm := llm.NewLLM()
 	taskModel := model.NewTaskModel(db)
 	return &ServiceContext{
 		Config:    c,
+		LLM:       llm,
 		TaskModel: taskModel,
 	}
 }

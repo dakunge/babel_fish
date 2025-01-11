@@ -26,6 +26,7 @@ type Task struct {
 type TaskModel interface {
 	Create(ctx context.Context, t Task) (uint, error)
 	GetTask(ctx context.Context, id uint) (Task, error)
+	UpdateState(ctx context.Context, id uint, sourceState, destState TaskState) (bool, error)
 }
 
 func NewTaskModel(db *gorm.DB) TaskModel {
@@ -49,4 +50,15 @@ func (m taskModel) GetTask(ctx context.Context, id uint) (Task, error) {
 		return t, db.Error
 	}
 	return t, nil
+}
+
+func (m taskModel) UpdateState(ctx context.Context, id uint, sourceState, destState TaskState) (bool, error) {
+	db := m.db.Where("id = ? AND state = ?", id, sourceState).Update("state", destState)
+	if db.Error != nil {
+		return false, db.Error
+	}
+	if db.RowsAffected == 0 {
+		return false, nil
+	}
+	return true, nil
 }
