@@ -50,7 +50,7 @@ func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskReque
 	if err != nil {
 		return nil, err
 	}
-	resultFileName := path.Join(l.svcCtx.Config.TaskPath, uuid)
+	resultFileName := path.Join(l.svcCtx.Config.ResultPath, uuid)
 	task := model.Task{
 		UserFileName:   handler.Filename,
 		TaskFileName:   taskFileName,

@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 
+	"github.com/zeromicro/go-zero/core/logc"
 	"gorm.io/gorm"
 )
 
@@ -38,8 +39,9 @@ type taskModel struct {
 }
 
 func (m taskModel) Create(ctx context.Context, t Task) (uint, error) {
-	if tx := m.db.Create(&t); tx.Error != nil {
-		return 0, tx.Error
+	if db := m.db.Create(&t); db.Error != nil {
+		logc.Error(ctx, "create task err %v", db.Error)
+		return 0, db.Error
 	}
 	return t.ID, nil
 }
@@ -47,14 +49,16 @@ func (m taskModel) Create(ctx context.Context, t Task) (uint, error) {
 func (m taskModel) GetTask(ctx context.Context, id uint) (Task, error) {
 	t := Task{}
 	if db := m.db.Where("id = ?", id).First(&t); db.Error != nil {
+		logc.Error(ctx, "get task id err %v", db.Error)
 		return t, db.Error
 	}
 	return t, nil
 }
 
 func (m taskModel) UpdateState(ctx context.Context, id uint, sourceState, destState TaskState) (bool, error) {
-	db := m.db.Where("id = ? AND state = ?", id, sourceState).Update("state", destState)
+	db := m.db.Model(&Task{}).Where("id = ? AND state = ?", id, int(sourceState)).Update("state", int(destState))
 	if db.Error != nil {
+		logc.Error(ctx, "update task state err %v", db.Error)
 		return false, db.Error
 	}
 	if db.RowsAffected == 0 {

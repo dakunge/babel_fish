@@ -23,6 +23,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		log.Fatal("open db err ")
 	}
 
+	err = db.AutoMigrate(&model.Task{})
+	if err != nil {
+		log.Fatal("automigrate err")
+	}
+
 	llm := llm.NewLLM()
 	taskModel := model.NewTaskModel(db)
 	return &ServiceContext{
