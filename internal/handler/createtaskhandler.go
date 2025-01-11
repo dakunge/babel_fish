@@ -3,11 +3,12 @@ package handler
 import (
 	"net/http"
 
-	"github.com/zeromicro/go-zero/rest/httpx"
-	xhttp "github.com/zeromicro/x/http"
 	"tuwei/babel_fish/internal/logic"
 	"tuwei/babel_fish/internal/svc"
 	"tuwei/babel_fish/internal/types"
+
+	"github.com/zeromicro/go-zero/rest/httpx"
+	xhttp "github.com/zeromicro/x/http"
 )
 
 func CreateTaskHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
@@ -19,7 +20,7 @@ func CreateTaskHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		}
 
 		l := logic.NewCreateTaskLogic(r.Context(), svcCtx)
-		resp, err := l.CreateTask(&req)
+		resp, err := l.CreateTask(r, &req)
 		if err != nil {
 			xhttp.JsonBaseResponseCtx(r.Context(), w, err)
 		} else {
