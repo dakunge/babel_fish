@@ -1,0 +1,50 @@
+syntax = "v1"
+
+type (
+	UserRequest  {}
+	UserResponse  {}
+	LoginRequest {
+		ID int `json:"id"`
+	}
+	LoginResponse  {}
+	CreateTaskRequest  {}
+	CreateTaskResponse {
+		ID int `json:"id"`
+	}
+	TranslateRequest {
+		ID int `path:"id"`
+	}
+	TranslateResponse  {}
+	GetTaskRequest {
+		ID int `path:"id"`
+	}
+	GetTaskResponse {
+		ID    int `json:"id"`
+		State int `json:"state"`
+	}
+	DownloadTaskRequest {
+		ID int `path:"id"`
+	}
+	DownloadTaskResponse  {}
+)
+
+service babel-api {
+	@handler UserHandler
+	post /auth/users (UserRequest) returns (UserResponse)
+
+	@handler LoginHandler
+	post /auth/login (LoginRequest) returns (LoginResponse)
+
+	@handler CreateTaskHandler
+	post /tasks (CreateTaskRequest) returns (CreateTaskResponse)
+
+	@handler TranslateHandler
+	post /tasks/:id/translate (TranslateRequest) returns (TranslateResponse)
+
+	@handler GetTaskHandler
+	get /tasks/:id/ (GetTaskRequest) returns (GetTaskResponse)
+
+	@handler DownloadTaskHandler
+	get /tasks/:id/download (DownloadTaskRequest) returns (DownloadTaskResponse)
+}
+
