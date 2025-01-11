@@ -62,3 +62,74 @@ llm 是收费服务，价格昂贵，尽量减少 llm 调用，这是第一优�
    2. 实际是 failed：同 doing
    3. 实际确实在 doing：failed 和 doing 我们没准确的办法区分（假设 llm 未提供查询状态服务，如果提供了实际也可以区分，我们这里认为没提供），这种情况只能根据时间戳与阈值比较，比如根据经验认为超过 60 s，就认为任务已经 failed
 
+
+
+
+
+# 测试方法：
+
+1. 测试文件在 etc/test.csv 下
+
+2. db,redis 等配置在 etc/babelfish-api.yaml 中
+
+3. 手动在创建数据库 create database babel_fish
+4. 创建任务，执行任务，执行任务过程中 llm 随机成功失败，失败后，monitor 会对失败任务发起重试，观察数据库task 的 state
+
+4. state 说明：
+   1. 0：任务等待用户手动执行
+   2. 1：任务正在执行中
+   3. 2：任务成功
+   4. 3：任务失败（会重试）
+   5. 4：任务永久失败（不会重试，因为达到最大 llm 调用次数）
+5. 具体测试方法
+   1. 快速连续创建任务，通过数据库，可以观察到只会创建一条任务（去重）
+   2. 创建多条任务，并且手动调用执行任务接口触发（llm 随机失败），使用 select id, state, llm_call_count,created_at, updated_at from tasks ;  观察 state，llm_call_count 会发现最终 state = 2 或者 4，对于 4 的情况，llm_call_count 一定是等于 配置中配置的最大值 
+   3. 对于网络原因造成的问题，可以手动修改 state，删除 task/result 下面对应的文件模拟
+
+
+
+创建账号
+
+curl --location 'http://0.0.0.0:8888/auth/users' \
+
+--header 'Content-Type: application/json' \
+
+--data '{
+
+​    "user_name": "likun",
+
+​    "user_pwd": "123"
+
+}'
+
+登录账号
+
+curl --location 'http://0.0.0.0:8888/auth/login' \
+
+--header 'Content-Type: application/json' \
+
+--data '{
+
+​    "user_name": "likun",
+
+​    "user_pwd": "123"
+
+}'
+
+
+
+创建任务
+
+curl --location 'http://0.0.0.0:8888/tasks' \
+
+--header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzY2Mjk1MjcsImlhdCI6MTczNjYyNTkyNywidXNlcklEIjoxfQ.2OYf91wyehp35oEBmmGLpL8SRLii-f06uqlGHRsqLC4' \
+
+--form 'file=@"/Users/zhengwei/Downloads/test.csv"'
+
+执行任务
+
+curl --location --request POST 'http://0.0.0.0:8888/tasks/34/translate' \
+
+--header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzY2Mjk1MjcsImlhdCI6MTczNjYyNTkyNywidXNlcklEIjoxfQ.2OYf91wyehp35oEBmmGLpL8SRLii-f06uqlGHRsqLC4' \
+
+--data ''
