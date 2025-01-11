@@ -10,11 +10,11 @@ import (
 type TaskState int
 
 const (
-	WaitTaskState      TaskState = 0
-	DoingTaskState     TaskState = 1
-	SuccessTaskState   TaskState = 2
-	FailedTaskState    TaskState = 3
-	AutoRetryTaskState TaskState = 4
+	WaitTaskState        TaskState = 0
+	DoingTaskState       TaskState = 1
+	SuccessTaskState     TaskState = 2
+	FailedTaskState      TaskState = 3
+	FinalFailedTaskState TaskState = 4
 )
 
 type Task struct {
@@ -24,12 +24,15 @@ type Task struct {
 	UserFileName   string    `json:"user_filename"`
 	TaskFileName   string    `json:"task_filename"`
 	ResultFileName string    `json:"result_filename"`
+	LLMCallCount   int       `json:"llm_call_count"`
 }
 
 type TaskModel interface {
 	Create(ctx context.Context, t Task) (uint, error)
 	GetTask(ctx context.Context, uid, id uint) (Task, error)
-	UpdateState(ctx context.Context, id uint, sourceState, destState TaskState) (bool, error)
+	UpdateState(ctx context.Context, id uint, sourceState, destState TaskState, count int) (bool, error)
+	// for monitor
+	GetTasks(ctx context.Context, begin uint, state []TaskState) ([]*Task, error)
 }
 
 func NewTaskModel(db *gorm.DB) TaskModel {
@@ -57,8 +60,21 @@ func (m taskModel) GetTask(ctx context.Context, uid, id uint) (Task, error) {
 	return t, nil
 }
 
-func (m taskModel) UpdateState(ctx context.Context, id uint, sourceState, destState TaskState) (bool, error) {
-	db := m.db.Model(&Task{}).Where("id = ? AND state = ?", id, int(sourceState)).Update("state", int(destState))
+func (m taskModel) GetTasks(ctx context.Context, begin uint, states []TaskState) ([]*Task, error) {
+	ts := []*Task{}
+	if db := m.db.Where("id >= ? AND state IN ?", begin, states).Find(&ts); db.Error != nil {
+		logc.Error(ctx, "get task id err %v", db.Error)
+		return ts, db.Error
+	}
+	return ts, nil
+}
+
+func (m taskModel) UpdateState(ctx context.Context, id uint, sourceState, destState TaskState, count int) (bool, error) {
+	updateColumns := map[string]interface{}{
+		"state":          destState,
+		"llm_call_count": count,
+	}
+	db := m.db.Model(&Task{}).Where("id = ? AND state = ?", id, int(sourceState)).Updates(updateColumns)
 	if db.Error != nil {
 		logc.Error(ctx, "update task state err %v", db.Error)
 		return false, db.Error

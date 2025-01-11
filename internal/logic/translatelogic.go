@@ -33,6 +33,13 @@ func (l *TranslateLogic) Translate(req *types.TranslateRequest) (resp *types.Tra
 	if err != nil {
 		return nil, err
 	}
+	if task.LLMCallCount >= l.svcCtx.Config.Task.LLMMaxCount {
+		_, err := l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, task.State, model.FinalFailedTaskState, task.LLMCallCount)
+		if err != nil {
+			return nil, err
+		}
+		return &types.TranslateResponse{}, nil
+	}
 	/*
 		采用乐观锁的方式,避免并发调用 llm
 		可能会出现 llm 调用失败, state 更新成功的问题, 低概率时间,使用 check 人物进行兜底
@@ -41,43 +48,47 @@ func (l *TranslateLogic) Translate(req *types.TranslateRequest) (resp *types.Tra
 	case model.FailedTaskState:
 		fallthrough
 	case model.WaitTaskState:
-		ok, err := l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, task.State, model.DoingTaskState)
+		err := l.TranslateImpl(task, model.DoingTaskState)
 		if err != nil {
 			return nil, err
 		}
-		if !ok {
-			return &types.TranslateResponse{}, nil
-		}
-		sourceLang, destLangs, contents, err := util.ReadTask(l.ctx, task.TaskFileName)
-		if err != nil {
-			return nil, err
-		}
-		results, err := l.svcCtx.LLM.Translate(l.ctx, sourceLang, destLangs, contents)
-		if err != nil {
-			ok, err = l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, model.DoingTaskState, model.FailedTaskState)
-			if err != nil {
-				l.Logger.Errorf("update task state failed")
-				return nil, err
-			}
-			return nil, err
-		}
-
-		err = util.WriteResult(l.ctx, task.ResultFileName, results)
-		if err != nil {
-			return nil, err
-		}
-		ok, err = l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, model.DoingTaskState, model.SuccessTaskState)
-		if err != nil {
-			ok, err = l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, model.DoingTaskState, model.FailedTaskState)
-			if err != nil {
-				l.Logger.Errorf("update task state failed")
-				return nil, err
-			}
-			return nil, err
-		}
-
 		return &types.TranslateResponse{}, nil
 	default:
 		return &types.TranslateResponse{}, nil
 	}
+}
+
+func (l *TranslateLogic) TranslateImpl(task model.Task, targetState model.TaskState) error {
+	ok, err := l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, task.State, targetState, task.LLMCallCount)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return err
+	}
+	sourceLang, destLangs, contents, err := util.ReadTask(l.ctx, task.TaskFileName)
+	if err != nil {
+		return err
+	}
+	results, err := l.svcCtx.LLM.Translate(l.ctx, sourceLang, destLangs, contents)
+	if err != nil {
+		ok, err2 := l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, targetState, model.FailedTaskState, task.LLMCallCount+1)
+		if err2 != nil {
+			l.Logger.Errorf("update task state failed err %v", err)
+			return err
+		}
+		l.Infof("update state failed success %v, %v", ok, task)
+		return err
+	}
+
+	err = util.WriteResult(l.ctx, task.ResultFileName, results)
+	if err != nil {
+		return err
+	}
+	ok, err = l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, targetState, model.SuccessTaskState, task.LLMCallCount+1)
+	if err != nil {
+		l.Logger.Errorf("update task state success state failed")
+		return err
+	}
+	return nil
 }

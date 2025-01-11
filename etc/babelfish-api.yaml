@@ -2,8 +2,11 @@ Name: babel_fish-api
 Host: 0.0.0.0
 Port: 8888
 
-task_path: "oss/task"
-result_path: "oss/result"
+Task:
+  task_path: "oss/task"
+  result_path: "oss/result"
+  retry_threshold: 10
+  llm_max_count: 3
 
 Auth:
   AccessSecret: "12345678"

@@ -43,7 +43,7 @@ func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskReque
 	defer file.Close()
 
 	uuid := uuid.New().String()
-	taskFileName := path.Join(l.svcCtx.Config.TaskPath, uuid)
+	taskFileName := path.Join(l.svcCtx.Config.Task.TaskPath, uuid)
 	tempFile, err := os.Create(taskFileName)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskReque
 	if err != nil {
 		return nil, err
 	}
-	resultFileName := path.Join(l.svcCtx.Config.ResultPath, uuid)
+	resultFileName := path.Join(l.svcCtx.Config.Task.ResultPath, uuid)
 	task := model.Task{
 		UserID:         uid,
 		UserFileName:   handler.Filename,
