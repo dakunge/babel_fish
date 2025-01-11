@@ -25,7 +25,8 @@ func NewGetTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetTaskLo
 
 func (l *GetTaskLogic) GetTask(req *types.GetTaskRequest) (resp *types.GetTaskResponse, err error) {
 	// todo: add your logic here and delete this line
-	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uint(req.ID))
+	uid := uint(0)
+	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uid, uint(req.ID))
 	if err != nil {
 		return nil, err
 	}

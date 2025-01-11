@@ -32,6 +32,7 @@ func NewCreateTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskRequest) (resp *types.CreateTaskResponse, err error) {
+	uid := uint(0)
 	_ = r.ParseMultipartForm(maxFileSize)
 	file, handler, err := r.FormFile("file")
 	if err != nil {
@@ -52,6 +53,7 @@ func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskReque
 	}
 	resultFileName := path.Join(l.svcCtx.Config.ResultPath, uuid)
 	task := model.Task{
+		UserID:         uid,
 		UserFileName:   handler.Filename,
 		TaskFileName:   taskFileName,
 		ResultFileName: resultFileName,

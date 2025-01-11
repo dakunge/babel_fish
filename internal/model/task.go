@@ -10,14 +10,16 @@ import (
 type TaskState int
 
 const (
-	WaitTaskState    TaskState = 0
-	DoingTaskState   TaskState = 1
-	SuccessTaskState TaskState = 2
-	FailedTaskState  TaskState = 3
+	WaitTaskState      TaskState = 0
+	DoingTaskState     TaskState = 1
+	SuccessTaskState   TaskState = 2
+	FailedTaskState    TaskState = 3
+	AutoRetryTaskState TaskState = 4
 )
 
 type Task struct {
 	gorm.Model
+	UserID         uint      `json:"user_id"`
 	State          TaskState `json:"state"`
 	UserFileName   string    `json:"user_filename"`
 	TaskFileName   string    `json:"task_filename"`
@@ -26,7 +28,7 @@ type Task struct {
 
 type TaskModel interface {
 	Create(ctx context.Context, t Task) (uint, error)
-	GetTask(ctx context.Context, id uint) (Task, error)
+	GetTask(ctx context.Context, uid, id uint) (Task, error)
 	UpdateState(ctx context.Context, id uint, sourceState, destState TaskState) (bool, error)
 }
 
@@ -46,9 +48,9 @@ func (m taskModel) Create(ctx context.Context, t Task) (uint, error) {
 	return t.ID, nil
 }
 
-func (m taskModel) GetTask(ctx context.Context, id uint) (Task, error) {
+func (m taskModel) GetTask(ctx context.Context, uid, id uint) (Task, error) {
 	t := Task{}
-	if db := m.db.Where("id = ?", id).First(&t); db.Error != nil {
+	if db := m.db.Where("id = ? AND user_id = ?", id, uid).First(&t); db.Error != nil {
 		logc.Error(ctx, "get task id err %v", db.Error)
 		return t, db.Error
 	}

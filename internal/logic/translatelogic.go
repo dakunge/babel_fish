@@ -26,7 +26,8 @@ func NewTranslateLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Transla
 }
 
 func (l *TranslateLogic) Translate(req *types.TranslateRequest) (resp *types.TranslateResponse, err error) {
-	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uint(req.ID))
+	uid := uint(0)
+	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uid, uint(req.ID))
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +35,10 @@ func (l *TranslateLogic) Translate(req *types.TranslateRequest) (resp *types.Tra
 		采用乐观锁的方式,避免并发调用 llm
 		可能会出现 llm 调用失败, state 更新成功的问题, 低概率时间,使用 check 人物进行兜底
 	*/
-	if task.State == model.WaitTaskState {
+	switch task.State {
+	case model.FailedTaskState:
+		fallthrough
+	case model.WaitTaskState:
 		ok, err := l.svcCtx.TaskModel.UpdateState(l.ctx, task.ID, task.State, model.DoingTaskState)
 		if err != nil {
 			return nil, err
@@ -71,7 +75,7 @@ func (l *TranslateLogic) Translate(req *types.TranslateRequest) (resp *types.Tra
 		}
 
 		return &types.TranslateResponse{}, nil
+	default:
+		return &types.TranslateResponse{}, nil
 	}
-
-	return &types.TranslateResponse{}, nil
 }

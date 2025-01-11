@@ -27,7 +27,8 @@ func NewDownloadTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Down
 }
 
 func (l *DownloadTaskLogic) DownloadTask(w http.ResponseWriter, req *types.DownloadTaskRequest) (resp *types.DownloadTaskResponse, err error) {
-	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uint(req.ID))
+	uid := uint(0)
+	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uid, uint(req.ID))
 	if err != nil {
 		return nil, err
 	}
