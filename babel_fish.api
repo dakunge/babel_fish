@@ -10,7 +10,9 @@ type (
 		UserName string `json:"user_name"`
 		UserPwd  string `json:"user_pwd"`
 	}
-	LoginResponse  {}
+	LoginResponse {
+		Token string `json:"token"`
+	}
 	CreateTaskRequest  {}
 	CreateTaskResponse {
 		ID int `json:"id"`

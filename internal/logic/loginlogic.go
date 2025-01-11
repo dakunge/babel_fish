@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"time"
 
 	"tuwei/babel_fish/internal/svc"
 	"tuwei/babel_fish/internal/types"
@@ -34,7 +35,14 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, 
 	if !util.CheckPasswordHash(req.UserPwd, user.UserPwd) {
 		return nil, errors.New("user or password error")
 	}
-	// TODO(kun.li): pwd
-	return &types.LoginResponse{}, nil
+	// 生成 JWT 令牌
+	tokenString, err := util.GenerateJWT(l.ctx, user.UserName, user.ID, 24*time.Hour)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.LoginResponse{
+		Token: tokenString,
+	}, nil
 
 }

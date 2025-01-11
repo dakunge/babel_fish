@@ -46,6 +46,5 @@ func (l *UserLogic) User(req *types.UserRequest) (resp *types.UserResponse, err 
 	if err != nil {
 		return nil, err
 	}
-
 	return &types.UserResponse{}, nil
 }
