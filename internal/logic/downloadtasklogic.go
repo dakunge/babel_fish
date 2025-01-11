@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 
@@ -27,7 +28,9 @@ func NewDownloadTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Down
 }
 
 func (l *DownloadTaskLogic) DownloadTask(w http.ResponseWriter, req *types.DownloadTaskRequest) (resp *types.DownloadTaskResponse, err error) {
-	uid := uint(0)
+	uid64, _ := l.ctx.Value("userID").(json.Number).Int64()
+	uid := uint(uid64)
+
 	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uid, uint(req.ID))
 	if err != nil {
 		return nil, err

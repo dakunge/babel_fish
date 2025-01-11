@@ -35,8 +35,11 @@ func (l *LoginLogic) Login(req *types.LoginRequest) (resp *types.LoginResponse, 
 	if !util.CheckPasswordHash(req.UserPwd, user.UserPwd) {
 		return nil, errors.New("user or password error")
 	}
+	secret := l.svcCtx.Config.Auth.AccessSecret
+	expires := l.svcCtx.Config.Auth.AccessExpire
+	iat := time.Now().Unix()
 	// 生成 JWT 令牌
-	tokenString, err := util.GenerateJWT(l.ctx, user.UserName, user.ID, 24*time.Hour)
+	tokenString, err := util.GenerateJWT(l.ctx, secret, user.ID, iat, expires)
 	if err != nil {
 		return nil, err
 	}

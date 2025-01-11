@@ -4,3 +4,7 @@ Port: 8888
 
 task_path: "oss/task"
 result_path: "oss/result"
+
+Auth:
+  AccessSecret: "12345678"
+  AccessExpire: 3600

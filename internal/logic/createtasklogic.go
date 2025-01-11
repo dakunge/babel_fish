@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -32,7 +33,8 @@ func NewCreateTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateTaskLogic) CreateTask(r *http.Request, req *types.CreateTaskRequest) (resp *types.CreateTaskResponse, err error) {
-	uid := uint(0)
+	uid64, _ := l.ctx.Value("userID").(json.Number).Int64()
+	uid := uint(uid64)
 	_ = r.ParseMultipartForm(maxFileSize)
 	file, handler, err := r.FormFile("file")
 	if err != nil {

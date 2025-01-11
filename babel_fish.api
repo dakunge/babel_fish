@@ -43,7 +43,12 @@ service babel-api {
 
 	@handler LoginHandler
 	post /auth/login (LoginRequest) returns (LoginResponse)
+}
 
+@server (
+	jwt: Auth
+)
+service babel-api {
 	@handler CreateTaskHandler
 	post /tasks (CreateTaskRequest) returns (CreateTaskResponse)
 

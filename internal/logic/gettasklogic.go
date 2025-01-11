@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 
 	"tuwei/babel_fish/internal/svc"
 	"tuwei/babel_fish/internal/types"
@@ -25,7 +26,8 @@ func NewGetTaskLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetTaskLo
 
 func (l *GetTaskLogic) GetTask(req *types.GetTaskRequest) (resp *types.GetTaskResponse, err error) {
 	// todo: add your logic here and delete this line
-	uid := uint(0)
+	uid64, _ := l.ctx.Value("userID").(json.Number).Int64()
+	uid := uint(uid64)
 	task, err := l.svcCtx.TaskModel.GetTask(l.ctx, uid, uint(req.ID))
 	if err != nil {
 		return nil, err
