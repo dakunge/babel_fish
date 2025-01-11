@@ -2,6 +2,16 @@ Name: babel_fish-api
 Host: 0.0.0.0
 Port: 8888
 
+Mysql:
+  user: root
+  pwd: 
+  host: 127.0.0.1
+  port: "3306"
+  database: babel_fish
+Redis:
+  host: 127.0.0.1
+  port: "6379"
+
 Task:
   task_path: "oss/task"
   result_path: "oss/result"
